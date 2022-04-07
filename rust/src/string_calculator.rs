@@ -5,7 +5,7 @@ fn parseAndSum(input: &str) -> Result<usize, ParseIntError> {
         return Ok(0);
     }
     Ok(input
-        .split(",")
+        .split(&[',', '\n'])
         .map(|val| val.parse())
         .collect::<Result<Vec<usize>, ParseIntError>>()?
         .into_iter()
@@ -28,5 +28,10 @@ mod test {
     #[test]
     fn should_sum_comma_separated_numbers() {
         assert_eq!(parseAndSum("4,6,2"), Ok(12));
+    }
+
+    #[test]
+    fn should_sum_newline_separated_numbers() {
+        assert_eq!(parseAndSum("4,6\n3"), Ok(13));
     }
 }
