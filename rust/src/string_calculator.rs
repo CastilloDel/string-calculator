@@ -4,22 +4,22 @@ fn parseAndSum(mut input: &str) -> Result<usize, ParseIntError> {
     if input.is_empty() {
         return Ok(0);
     }
-    let mut delimiters = vec![',', '\n'];
-    if let Some(delimiter) = read_delimiter(input) {
-        input = &input[input.find("\n").unwrap()..];
-        delimiters = vec![delimiter];
-    }
+    // let mut delimiters = vec![',', '\n'];
+    // if let Some(delimiter) = read_delimiter(input) {
+    //     input = &input[input.find("\n").unwrap()..];
+    //     delimiters = vec![delimiter];
+    // }
     Ok(input
-        .split(&delimiters[..])
+        .split(&[',', '\n'])
         .map(|val| val.parse())
         .collect::<Result<Vec<usize>, ParseIntError>>()?
         .into_iter()
         .sum::<usize>())
 }
 
-fn read_delimiter(input: &str) -> Option<char> {
+fn read_delimiter(input: &str) -> Option<&str> {
     if input.starts_with("//") {
-        return input.chars().nth(2);
+        return Some(&input[2..input.find('\n')?]);
     }
     None
 }
@@ -48,7 +48,8 @@ mod test {
     }
 
     #[test]
-    fn should_be_possible_to_read_a_one_char_delimiter() {
-        assert_eq!(read_delimiter("//;\n1;4;4"), Some(';'))
+    fn should_be_possible_to_read_a_delimiter() {
+        assert_eq!(read_delimiter("//;\n1;4;4"), Some(";"));
+        assert_eq!(read_delimiter("//;-\n1;-4;-4"), Some(";-"));
     }
 }
