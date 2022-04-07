@@ -1,15 +1,27 @@
 use std::num::ParseIntError;
 
-fn parseAndSum(input: &str) -> Result<usize, ParseIntError> {
+fn parseAndSum(mut input: &str) -> Result<usize, ParseIntError> {
     if input.is_empty() {
         return Ok(0);
     }
+    let mut delimiters = vec![',', '\n'];
+    if let Some(delimiter) = read_delimiter(input) {
+        input = &input[input.find("\n").unwrap()..];
+        delimiters = vec![delimiter];
+    }
     Ok(input
-        .split(&[',', '\n'])
+        .split(&delimiters[..])
         .map(|val| val.parse())
         .collect::<Result<Vec<usize>, ParseIntError>>()?
         .into_iter()
         .sum::<usize>())
+}
+
+fn read_delimiter(input: &str) -> Option<char> {
+    if input.starts_with("//") {
+        return input.chars().nth(2);
+    }
+    None
 }
 
 #[cfg(test)]
@@ -33,5 +45,10 @@ mod test {
     #[test]
     fn should_sum_newline_separated_numbers() {
         assert_eq!(parseAndSum("4,6\n3"), Ok(13));
+    }
+
+    #[test]
+    fn should_be_possible_to_read_a_one_char_delimiter() {
+        assert_eq!(read_delimiter("//;\n1;4;4"), Some(';'))
     }
 }
