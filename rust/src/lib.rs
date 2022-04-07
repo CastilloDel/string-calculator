@@ -1,6 +1,18 @@
 use std::num::ParseIntError;
 
-pub fn parse_and_sum(mut input: &str) -> Result<usize, ParseIntError> {
+#[derive(Debug, PartialEq)]
+pub enum CalculatorError {
+    NegativeNumbers(String),
+    Parse(ParseIntError),
+}
+
+impl From<ParseIntError> for CalculatorError {
+    fn from(error: ParseIntError) -> Self {
+        CalculatorError::Parse(error)
+    }
+}
+
+pub fn parse_and_sum(mut input: &str) -> Result<i32, CalculatorError> {
     if input.is_empty() {
         return Ok(0);
     }
@@ -9,12 +21,12 @@ pub fn parse_and_sum(mut input: &str) -> Result<usize, ParseIntError> {
         input = &input[input.find("\n").unwrap() + 1..];
         delimiters = vec![delimiter];
     }
-    Ok(split_by_string(input, &delimiters[..])
+    let numbers = split_by_string(input, &delimiters)
         .into_iter()
         .map(|val| val.parse())
-        .collect::<Result<Vec<usize>, ParseIntError>>()?
-        .into_iter()
-        .sum::<usize>())
+        .collect::<Result<Vec<i32>, _>>()?;
+    check_negative_numbers(&numbers)?;
+    Ok(numbers.into_iter().sum::<i32>())
 }
 
 fn read_delimiter(input: &str) -> Option<&str> {
@@ -24,7 +36,22 @@ fn read_delimiter(input: &str) -> Option<&str> {
     None
 }
 
-fn split_by_string<'a>(input: &'a str, delimiters: &[&str]) -> Vec<&'a str> {
+fn check_negative_numbers(numbers: &Vec<i32>) -> Result<(), CalculatorError> {
+    let negatives: Vec<i32> = numbers.iter().filter(|&&val| val < 0).copied().collect();
+    if negatives.is_empty() {
+        Ok(())
+    } else {
+        Err(CalculatorError::NegativeNumbers(
+            negatives
+                .iter()
+                .map(|num| num.to_string())
+                .reduce(|s, num| s + ", " + &num)
+                .unwrap(),
+        ))
+    }
+}
+
+fn split_by_string<'a>(input: &'a str, delimiters: &Vec<&str>) -> Vec<&'a str> {
     let mut result = Vec::new();
     let mut last_division = 0;
     for i in 1..input.len() {
@@ -72,5 +99,13 @@ mod test {
     #[test]
     fn should_be_possible_to_use_a_custom_delimiter() {
         assert_eq!(parse_and_sum("//;-\n1;-4;-4"), Ok(9));
+    }
+
+    #[test]
+    fn should_error_if_there_are_negative_numbers() {
+        assert_eq!(
+            parse_and_sum("3,-2,4,-2"),
+            Err(CalculatorError::NegativeNumbers("-2, -2".to_string()))
+        );
     }
 }
