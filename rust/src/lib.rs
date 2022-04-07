@@ -1,6 +1,6 @@
 use std::num::ParseIntError;
 
-fn parseAndSum(mut input: &str) -> Result<usize, ParseIntError> {
+pub fn parse_and_sum(mut input: &str) -> Result<usize, ParseIntError> {
     if input.is_empty() {
         return Ok(0);
     }
@@ -45,22 +45,22 @@ mod test {
     use super::*;
     #[test]
     fn should_return_0_if_input_is_empty() {
-        assert_eq!(parseAndSum(""), Ok(0));
+        assert_eq!(parse_and_sum(""), Ok(0));
     }
 
     #[test]
     fn should_parse_if_there_is_only_one_number() {
-        assert_eq!(parseAndSum("4"), Ok(4));
+        assert_eq!(parse_and_sum("4"), Ok(4));
     }
 
     #[test]
     fn should_sum_comma_separated_numbers() {
-        assert_eq!(parseAndSum("4,6,2"), Ok(12));
+        assert_eq!(parse_and_sum("4,6,2"), Ok(12));
     }
 
     #[test]
     fn should_sum_newline_separated_numbers() {
-        assert_eq!(parseAndSum("4,6\n3"), Ok(13));
+        assert_eq!(parse_and_sum("4,6\n3"), Ok(13));
     }
 
     #[test]
@@ -71,6 +71,6 @@ mod test {
 
     #[test]
     fn should_be_possible_to_use_a_custom_delimiter() {
-        assert_eq!(parseAndSum("//;-\n1;-4;-4"), Ok(9));
+        assert_eq!(parse_and_sum("//;-\n1;-4;-4"), Ok(9));
     }
 }
