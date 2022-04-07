@@ -18,7 +18,7 @@ pub fn parse_and_sum(mut input: &str) -> Result<i32, CalculatorError> {
     }
     let mut delimiters = vec![",", "\n"];
     if let Some(delimiter) = read_delimiter(input) {
-        input = &input[input.find("\n").unwrap() + 1..];
+        input = &input[input.find("\n").unwrap() + 1..]; // There must be a \n
         delimiters = vec![delimiter];
     }
     let numbers = split_by_string(input, &delimiters)
@@ -41,13 +41,12 @@ fn check_negative_numbers(numbers: &Vec<i32>) -> Result<(), CalculatorError> {
     if negatives.is_empty() {
         Ok(())
     } else {
-        Err(CalculatorError::NegativeNumbers(
-            negatives
-                .iter()
-                .map(|num| num.to_string())
-                .reduce(|s, num| s + ", " + &num)
-                .unwrap(),
-        ))
+        let message = negatives
+            .into_iter()
+            .map(|num| num.to_string())
+            .reduce(|s, num| s + ", " + &num)
+            .unwrap(); // list can't be empty
+        Err(CalculatorError::NegativeNumbers(message))
     }
 }
 
@@ -55,12 +54,10 @@ fn split_by_string<'a>(input: &'a str, delimiters: &Vec<&str>) -> Vec<&'a str> {
     let mut result = Vec::new();
     let mut last_division = 0;
     for i in 1..input.len() {
-        for delimiter in delimiters {
-            if input[i..].starts_with(delimiter) {
-                result.push(&input[last_division..i]);
-                last_division = i + delimiter.len();
-                break;
-            }
+        let delimiter = delimiters.iter().find(|&&del| input[i..].starts_with(del));
+        if let Some(delimiter) = delimiter {
+            result.push(&input[last_division..i]);
+            last_division = i + delimiter.len();
         }
     }
     result.push(&input[last_division..]);
