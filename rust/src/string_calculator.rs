@@ -4,7 +4,12 @@ fn parseAndSum(input: &str) -> Result<usize, ParseIntError> {
     if input.is_empty() {
         return Ok(0);
     }
-    input.parse()
+    Ok(input
+        .split(",")
+        .map(|val| val.parse())
+        .collect::<Result<Vec<usize>, ParseIntError>>()?
+        .into_iter()
+        .sum::<usize>())
 }
 
 #[cfg(test)]
@@ -18,5 +23,10 @@ mod test {
     #[test]
     fn should_parse_if_there_is_only_one_number() {
         assert_eq!(parseAndSum("4"), Ok(4));
+    }
+
+    #[test]
+    fn should_sum_comma_separated_numbers() {
+        assert_eq!(parseAndSum("4,6,2"), Ok(12));
     }
 }
