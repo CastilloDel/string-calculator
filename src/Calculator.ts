@@ -7,11 +7,11 @@ export class Calculator {
     this.delimiter = this.defaultDelimiter;
   }
 
-  public processRawInputReturnSum(rawInput: string): number {
-    const input = this.processInput(rawInput);
+  public parseAndSum(input: string): number {
+    input = this.processInput(input);
     const [firstNumber, rest] = this.splitFirstNumber(input);
     if (rest === "") return firstNumber;
-    return firstNumber + this.processRawInputReturnSum(rest);
+    return firstNumber + this.parseAndSum(rest);
   }
 
   private splitFirstNumber(input: string): [number, string] {
@@ -31,11 +31,10 @@ export class Calculator {
   private parseNumber(number: string) {
     const parsedNumber = parseInt(number);
     if (isNaN(parsedNumber)) return 0;
-    if (parsedNumber < 0){
-      if(this.negativeNumbers === ""){
+    if (parsedNumber < 0) {
+      if (this.negativeNumbers === "") {
         this.negativeNumbers = `${parsedNumber}`;
-      }
-      else{
+      } else {
         this.negativeNumbers += `, ${parsedNumber}`;
       }
     }
@@ -54,11 +53,4 @@ export class Calculator {
     }
     return input;
   }
-
-  // TODO:
-  // *"//|\n1|2,3" is invalid and should return the message "'|' expected but ',' found at position 3."
-
-  /*"-1,2" is invalid and should return the message "Negative not allowed : -1"
-    "2,-4,-5" is invalid and should return the message "Negative not allowed : -4, -5" 
-  */
 }
