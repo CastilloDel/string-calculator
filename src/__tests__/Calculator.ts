@@ -52,4 +52,8 @@ describe("StringCalculator", () => {
   it("Shouldn't allow negative numbers", () => {
     expect(() => calculator.parseAndSum("1,-2,-3")).toThrowError(/.*/);
   });
+
+  it("Should include the found negative numbers in the error", () => {
+    expect(() => calculator.parseAndSum("-1,2,-3")).toThrowError(/-1.*-3/);
+  });
 });

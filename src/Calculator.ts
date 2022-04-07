@@ -1,27 +1,34 @@
 export class Calculator {
   readonly defaultDelimiter = /[,\n]/;
-  private delimiter: RegExp;
-  private negativeNumbers = "";
-
-  constructor() {
-    this.delimiter = this.defaultDelimiter;
-  }
+  private negativeNumbers: number[] = [];
 
   public parseAndSum(input: string): number {
-    input = this.processInput(input);
-    const [firstNumber, rest] = this.splitFirstNumber(input);
-    if (rest === "") return firstNumber;
-    return firstNumber + this.parseAndSum(rest);
+    this.negativeNumbers = [];
+    const [delimiter, rest] = this.processDelimiter(input);
+    const result = this.parseAndSumWithDelimiter(rest, delimiter);
+    if (this.negativeNumbers.length !== 0) {
+      throw `Negatives not allowed: ${this.negativeNumbers.join(", ")}`;
+    }
+    return result;
   }
 
-  private splitFirstNumber(input: string): [number, string] {
-    const firstDelimiter = this.getFirstDelimiterIndex(input);
+  private parseAndSumWithDelimiter(input: string, delimiter: RegExp): number {
+    const [firstNumber, rest] = this.splitFirstNumber(input, delimiter);
+    this.storeIfNegative(firstNumber);
+    if (rest === "") return firstNumber;
+    return firstNumber + this.parseAndSumWithDelimiter(rest, delimiter);
+  }
+
+  private storeIfNegative(number: number) {
+    if (number < 0) {
+      this.negativeNumbers.push(number);
+    }
+  }
+
+  private splitFirstNumber(input: string, delimiter: RegExp): [number, string] {
+    const firstDelimiter = input.search(delimiter);
     if (firstDelimiter === -1) {
-      let result = this.parseNumber(input);
-      if (this.negativeNumbers !== "") {
-        throw `Negatives not allowed: ${this.negativeNumbers}`;
-      }
-      return [result, ""];
+      return [this.parseNumber(input), ""];
     }
     const firstNumber = this.parseNumber(input.substring(0, firstDelimiter));
     const rest = input.substring(firstDelimiter + 1);
@@ -31,26 +38,15 @@ export class Calculator {
   private parseNumber(number: string) {
     const parsedNumber = parseInt(number);
     if (isNaN(parsedNumber)) return 0;
-    if (parsedNumber < 0) {
-      if (this.negativeNumbers === "") {
-        this.negativeNumbers = `${parsedNumber}`;
-      } else {
-        this.negativeNumbers += `, ${parsedNumber}`;
-      }
-    }
     return parsedNumber;
   }
 
-  private getFirstDelimiterIndex(input: string): number {
-    return input.search(this.delimiter);
-  }
-
-  private processInput(input: string): string {
+  private processDelimiter(input: string): [RegExp, string] {
     const delimiter = input.match(/^\/\/(.*?)\n/);
     if (delimiter) {
-      this.delimiter = new RegExp(delimiter[1]);
-      input = input.substring(input.indexOf("\n") + 1);
+      const input_without_delimiter = input.substring(input.indexOf("\n") + 1);
+      return [new RegExp(delimiter[1]), input_without_delimiter];
     }
-    return input;
+    return [this.defaultDelimiter, input];
   }
 }
